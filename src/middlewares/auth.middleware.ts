@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
-import { RequestHandler, Response } from "express";
+import { RequestHandler } from "express";
 import { HttpResponse } from "../domain/response";
 import { Code } from "../enum/code.enum";
 import { Status } from "../enum/status.enum";
 import { authToken } from '../config/config';
-// import { IAuthenticatedUser } from '../interfaces/IUser';
+
 
 export const verifyToken: RequestHandler = (req, res, next) => {
   let jwtToken: string | undefined = req.cookies.token;
@@ -15,7 +15,7 @@ export const verifyToken: RequestHandler = (req, res, next) => {
   }
 
   // TODO: use correct interface for data
-  jwt.verify(jwtToken, authToken, (error: Error, data: any) => {
+  jwt.verify(jwtToken, authToken, function (error, data) {
     if (error) {
       return next(new Error('Could not verify token'));
     }

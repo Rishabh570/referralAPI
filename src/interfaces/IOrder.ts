@@ -4,6 +4,11 @@ export interface IOrderSummary {
   discount: number;
   smallbucksUsed: number;
   smallbucksRemaining: number;
+  scid: string;
+  useCoins: boolean;
+  totalTransactionFees: number;
+  investAmount: number;
+  smallbucksEarned: number;
 }
 
 export interface IOrderType {

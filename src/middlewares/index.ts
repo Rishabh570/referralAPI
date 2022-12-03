@@ -1,1 +1,1 @@
-export { verifyToken } from './order.middleware';
+export { verifyToken } from './auth.middleware';
