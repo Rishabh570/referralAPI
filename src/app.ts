@@ -6,6 +6,7 @@ import { Status } from './enum/status.enum';
 import { PORT } from './config/config';
 import { verifyToken } from './middlewares';
 import { userRoute } from './routes';
+import * as database from './database';
 export class App {
   private readonly app: Application;
   private readonly APPLICATION_RUNNING = 'application is running on:';
@@ -19,8 +20,10 @@ export class App {
   }
 
   listen(): void {
-    this.app.listen(this.port);
-    console.info(`${this.APPLICATION_RUNNING} ${this.port}`);
+    database.init().then(()=>{
+      this.app.listen(this.port);
+      console.info(`${this.APPLICATION_RUNNING} ${this.port}`);
+    })
   }
 
   private middleware(): void {

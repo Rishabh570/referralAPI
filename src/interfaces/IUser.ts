@@ -13,14 +13,17 @@ export interface IUser {
   smallbucks: number;
 }
 
+export interface IJwtUser {
+  id : string;
+}
 export interface IAuthenticatedUser extends Request {
-  user: IUser;
+  user: IJwtUser;
 }
 
 export interface IAuthenticatedRequestHandler extends RequestHandler {
-  user: IUser;
+  user: IJwtUser;
 }
 
 export interface IAuthenticatedResponse extends Response {
-  user: IUser;
+  user: IJwtUser;
 }
