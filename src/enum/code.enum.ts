@@ -4,5 +4,6 @@ export enum Code {
     BAD_REQUEST = 400,
     CREATED = 201,
     INTERNAL_SERVER_ERROR = 500,
-    NOT_AUTHORIZED = 401
+    NOT_AUTHORIZED = 401,
+    USER_EXIST=403
 }

@@ -4,7 +4,8 @@ import { userInterface } from '../interfaces';
 
 export const userSchema = new Schema<userInterface.IUser>({
   name: {
-    type: String
+    type: String,
+    required: true,
   },
   email: {
     type: String,
@@ -18,32 +19,15 @@ export const userSchema = new Schema<userInterface.IUser>({
     required: true,
   },
   flags: {
-      hasInvested: {
-        type: Boolean,
-        default: false
-      },
+    hasInvested: {
+      type: Boolean,
+      default: false
+    },
   },
   referralCode: {
     type: String,
     default: null
   },
-  referredTo: [
-    {
-      _id: {
-        type: String
-      },
-      name: {
-        type: String
-      },
-      hasInvested: {
-        type: Boolean 
-      },
-      investDate : {
-        type: String,
-        default: Date.now
-      },
-    }
-  ],
   referredBy: {
     type: String,
     default: null

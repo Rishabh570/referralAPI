@@ -1,11 +1,11 @@
-import express, { Request, Response, Application } from 'express';
+import express, { Request, Response, Application, Router } from 'express';
 import orderRoutes from './routes/orders.routes';
 import { HttpResponse } from './domain/response';
 import { Code } from './enum/code.enum';
 import { Status } from './enum/status.enum';
 import { PORT } from './config/config';
 import { verifyToken } from './middlewares';
-
+import { userRoute } from './routes';
 export class App {
   private readonly app: Application;
   private readonly APPLICATION_RUNNING = 'application is running on:';
@@ -28,7 +28,8 @@ export class App {
   }
 
   private routes(): void {
-    this.app.use('/orders', orderRoutes);
+    this.app.use('/orders', this.middleware, orderRoutes);
+    this.app.use('/user', userRoute);
     this.app.get('/', (_: Request, res: Response)=> res.status(Code.OK).send(new HttpResponse(Code.OK, Status.OK, 'Welcome to the Order Service!')));
     this.app.all('*', (_: Request, res: Response)=> res.status(Code.NOT_FOUND).send(new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)));
   }
