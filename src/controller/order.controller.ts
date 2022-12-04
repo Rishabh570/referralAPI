@@ -11,7 +11,7 @@ import { referralService, orderService, offerService } from '../services';
 export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, res) => {
   try {
     const { scid, orderType, useCoins, investAmount } = req.body;
-    if (!scid || !orderType || !investAmount || typeof useCoins === 'undefined') {
+    if (!scid || !orderType || !investAmount) {
       return res.status(Code.BAD_REQUEST)
       .send(new HttpResponse(Code.BAD_REQUEST, Status.BAD_REQUEST, 'Invalid request format'));
     }
@@ -30,17 +30,18 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
 
     return res.status(Code.OK)
       .send(new HttpResponse(Code.OK, Status.OK, 'Order Placed successfully', orderSummary ));
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error(error);
+    const errMessage = error.message as string;
     return res.status(Code.INTERNAL_SERVER_ERROR)
-      .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, 'An error occurred'));
+      .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, errMessage || 'An error occurred'));
   }
 }
 
 export const placeOrderConfirm = async (req: Request, res: Response) => {
   try {
     const { investAmount, useCoins, scid, coinsUsed, orderType } = req.body;
-    if (!investAmount || typeof useCoins === 'undefined'  || !scid || !coinsUsed || !orderType) {
+    if (!investAmount || !scid || !coinsUsed || !orderType) {
       return res.status(Code.BAD_REQUEST)
       .send(new HttpResponse(Code.BAD_REQUEST, Status.BAD_REQUEST, 'Invalid request format'));
     }
@@ -58,8 +59,8 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     const orderSummary = getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
     
-    // TODO: invoke orders API; gives response message based on orderType
-
+    // invoke orders API; gives response message based on orderType
+    await orderService.placeOrderOnExchange();
 
     const { flags, referredBy } = userObj;
     const { hasInvested: newUserHasInvested } = flags;
@@ -86,9 +87,13 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
       // generate a fresh referralCode for new user
       const freshOfferCode = offerService.generateOfferCode(offerCodeLength);
 
+      // refund GST as smallbucks to new user
+      const { smallbucksEarned } = orderSummary;
+
       // update referralCode and hasInvested for new user
-      await orderService.updateUser({ _id: id }, { 'flags.hasInvested': true, referralCode: freshOfferCode });
+      await orderService.updateUser({ _id: id }, { $set: { 'flags.hasInvested': true, referralCode: freshOfferCode }, $inc: { smallbucks: smallbucksEarned} });
       await referralService.updateReferralDoc({ referredTo: id }, { hasInvested: true, investDate: new Date() });
+
 
       // TODO: Send a celebratory OU success email (with their newly create referral code)
 
@@ -99,9 +104,10 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
     return res.status(Code.OK)
       .send(new HttpResponse(Code.OK, Status.OK, 'Order Placed successfully', orderSummary ));
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error(error);
+    const errMessage = error.message as string; 
     return res.status(Code.INTERNAL_SERVER_ERROR)
-      .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, 'An error occurred'));
+      .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, errMessage || 'An error occurred'));
   }
 }

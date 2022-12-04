@@ -15,13 +15,19 @@ export const getTransactionFees = (orderType: IOrderType, investAmount: number) 
 }
 
 // This calculates cost breakdown for the new user
-export const getOrderSummary = (userObj: IUser, investAmount: number, useCoins: boolean, orderType: IOrderType, scid: string): IOrderSummary => {
+export const getOrderSummary = (userObj: IUser, investAmount: number, useCoins: number, orderType: IOrderType, scid: string): IOrderSummary => {
   const { smallbucks, flags } = userObj;
   const { hasInvested } = flags;
   let discount = 0;
   let smallbucksRemaining;
-  let smallbucksUsed;
-  
+  let smallbucksUsed = useCoins ? useCoins : 0;
+  let smallbucksWorth = smallbucksUsed * smallbucksMultiplier;
+
+  // useCoins value must be lower than what user holds
+  if(smallbucksUsed > smallbucks) {
+    throw new Error(`You can only use ${smallbucksUsed} coins.`);
+  }
+
   // Tx fees
   let txFees = getTransactionFees(orderType, investAmount);
   let gstFees = txFees * 0.18;
@@ -38,11 +44,7 @@ export const getOrderSummary = (userObj: IUser, investAmount: number, useCoins: 
   // Total money to be deducted (including investAmount)
   let totalCost = investAmount + totalTransactionFees;
   let effectiveCost = totalCost;
-  let smallbucksWorth = 0;
 
-  if (useCoins) {
-    smallbucksWorth = smallbucks / smallbucksMultiplier;
-  }
   if (smallbucksWorth >= totalCost) {
     effectiveCost = 0;
     discount = discount + totalCost;
@@ -52,8 +54,7 @@ export const getOrderSummary = (userObj: IUser, investAmount: number, useCoins: 
   else {
     effectiveCost = totalCost - smallbucksWorth;
     discount = discount + smallbucksWorth;
-    smallbucksUsed = smallbucks;
-    smallbucksRemaining = 0;
+    smallbucksRemaining = smallbucks - smallbucksUsed;
   }
 
   const orderSummary = {
