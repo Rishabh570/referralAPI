@@ -5,5 +5,6 @@ export enum Code {
     CREATED = 201,
     INTERNAL_SERVER_ERROR = 500,
     NOT_AUTHORIZED = 401,
-    USER_EXIST=403
+    USER_EXIST=403,
+    INVALID_CODE=403
 }

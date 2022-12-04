@@ -17,8 +17,8 @@ export const signup: RequestHandler = async (req: Request, res: Response) => {
 
         if (referralCode) {
             const referrerUser = await userService.findUser({ referralCode }, { _id: 1 });
-            if (!referrerUser.length) return res.status(Code.USER_EXIST)
-                .send(new HttpResponse(Code.USER_EXIST, Status.USER_EXIST, 'Invalid referral code'));
+            if (!referrerUser.length) return res.status(Code.INVALID_CODE)
+                .send(new HttpResponse(Code.INVALID_CODE, Status.INVALID_CODE, 'Invalid referral code'));
             referredBy = referrerUser[0]._id;
         }
 
