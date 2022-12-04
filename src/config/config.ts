@@ -4,6 +4,7 @@ export const shortenerAPIURL = process.env.shortenerAPIURL || 'http://localhost'
 export const notificationProducerURL = process.env.notificationProducerURL || 'http://localhost';
 export const offerCodeLength = 12;
 export const smallbucksMultiplier = 10;
+export const referrerRewardINR = 100;
 export const mongoConfig = {
     dbURI: process.env.MONGODB_URI || process.env.MONGOLAB_URI || 'mongodb://127.0.0.1:27017/smallcase-dev',
     dbOptions: {
