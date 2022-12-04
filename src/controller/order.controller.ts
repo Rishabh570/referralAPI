@@ -1,13 +1,11 @@
 import { Request, RequestHandler, Response } from 'express';
-import { referrerRewardINR, smallbucksMultiplier } from '../config/config';
+import { offerCodeLength, referrerRewardINR, smallbucksMultiplier } from '../config/config';
 import { HttpResponse } from '../domain/response';
 import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
 import { getOrderSummary } from '../helpers/order.helper';
 import { IAuthenticatedUser } from '../interfaces/IUser';
-import { generateOfferCode } from '../services/offer.service';
-import { getUserById, updateUser } from '../services/order.service';
-import { updateReferralDoc } from '../services/referral.service';
+import { referralService, orderService, offerService } from '../services';
 
 // @ts-ignore
 export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, res) => {
@@ -21,7 +19,7 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
     // Fetch user info from JWT
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await getUserById({ _id: id });
+    const userObj = await orderService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -49,7 +47,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await getUserById({ _id: id });
+    const userObj = await orderService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -72,7 +70,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     if(referredBy && !newUserHasInvested) {
       // add 100 INR worth of coins to referrer's account
       const smallbucksToAdd = referrerRewardINR * smallbucksMultiplier;
-      await updateUser({ _id: referredBy }, { $inc: { smallbucks: smallbucksToAdd } });
+      await orderService.updateUser({ _id: referredBy }, { $inc: { smallbucks: smallbucksToAdd } });
 
       // TODO: 2. send an email to referrer notifying successful onboarding of the referred user
     }
@@ -86,11 +84,11 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     */
     if(!newUserHasInvested) {
       // generate a fresh referralCode for new user
-      const freshOfferCode = generateOfferCode();
+      const freshOfferCode = offerService.generateOfferCode(offerCodeLength);
 
       // update referralCode and hasInvested for new user
-      await updateUser({ _id: id }, { 'flags.hasInvested': true, referralCode: freshOfferCode });
-      await updateReferralDoc({ referredTo: id }, { hasInvested: true, investDate: new Date() });
+      await orderService.updateUser({ _id: id }, { 'flags.hasInvested': true, referralCode: freshOfferCode });
+      await referralService.updateReferralDoc({ referredTo: id }, { hasInvested: true, investDate: new Date() });
 
       // TODO: Send a celebratory OU success email (with their newly create referral code)
 
