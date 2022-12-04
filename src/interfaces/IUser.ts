@@ -1,34 +1,29 @@
 import { Request, RequestHandler, Response } from "express";
 
-export interface IReferredTo {
-  _id: string;
-  name: string;
-  hasInvested: boolean;
-  investDate : string;
-}
-
 export interface IUser {
-  _id: string;
+  _id?: string;
   name: string;
   email: string;
   password: string;
   flags: {
       hasInvested: boolean;
   },
-  referralCode: string;
-  referredTo: IReferredTo[],
-  referredBy: string;
+  referralCode?: string;
+  referredBy: string | null;
   smallbucks: number;
 }
 
+export interface IJwtUser {
+  id : string;
+}
 export interface IAuthenticatedUser extends Request {
-  user: IUser;
+  user: IJwtUser;
 }
 
 export interface IAuthenticatedRequestHandler extends RequestHandler {
-  user: IUser;
+  user: IJwtUser;
 }
 
 export interface IAuthenticatedResponse extends Response {
-  user: IUser;
+  user: IJwtUser;
 }
