@@ -1,10 +1,11 @@
 import { Request, RequestHandler, Response } from 'express';
+import { offerCodeLength, referrerRewardINR, smallbucksMultiplier } from '../config/config';
 import { HttpResponse } from '../domain/response';
 import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
 import { getOrderSummary } from '../helpers/order.helper';
 import { IAuthenticatedUser } from '../interfaces/IUser';
-import { getUserById, updateUser } from '../services/order.service';
+import { referralService, orderService, offerService } from '../services';
 
 // @ts-ignore
 export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, res) => {
@@ -18,7 +19,7 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
     // Fetch user info from JWT
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await getUserById({ _id: id });
+    const userObj = await orderService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -46,7 +47,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await getUserById({ _id: id });
+    const userObj = await orderService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -57,30 +58,44 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     const orderSummary = getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
     
-    // TODO: invoke orders API 
+    // TODO: invoke orders API; gives response message based on orderType
 
 
-    const { flags } = userObj;
-    const { hasInvested } = flags;
+    const { flags, referredBy } = userObj;
+    const { hasInvested: newUserHasInvested } = flags;
 
     /**
-     *  Referrer:
-     * 1. //TODO: Gets referral bonus = 100 INR worth of smallbucks
-     * 2. //TODO: create new referredTo document
-     * 3. //TODO: Send an email to referrer notifying successful onboarding of the referred user
+     *  Referrer
     */
-    
+    if(referredBy && !newUserHasInvested) {
+      // add 100 INR worth of coins to referrer's account
+      const smallbucksToAdd = referrerRewardINR * smallbucksMultiplier;
+      await orderService.updateUser({ _id: referredBy }, { $inc: { smallbucks: smallbucksToAdd } });
 
-
+      // TODO: 2. send an email to referrer notifying successful onboarding of the referred user
+    }
 
     /**
      *  New user:
      * 1. Only needs to pay GST fees
-     * 2. //TODO: send a celebratory OU success email (with their newly create referral code)
-     * 3. set hasInvested to true
+     * 2. send a celebratory OU success email (with their newly create referral code)
+     * 3. set hasInvested to true in Users and Referral collections
+     * 4. generate a fresh referralCode for new user and attach to the user document
     */
-    await updateUser({ _id: id }, { hasInvested: true });
+    if(!newUserHasInvested) {
+      // generate a fresh referralCode for new user
+      const freshOfferCode = offerService.generateOfferCode(offerCodeLength);
 
+      // update referralCode and hasInvested for new user
+      await orderService.updateUser({ _id: id }, { 'flags.hasInvested': true, referralCode: freshOfferCode });
+      await referralService.updateReferralDoc({ referredTo: id }, { hasInvested: true, investDate: new Date() });
+
+      // TODO: Send a celebratory OU success email (with their newly create referral code)
+
+    }
+    else {
+      // TODO: Send a normal OU success email (with their referral code) 
+    }
 
     return res.status(Code.OK)
       .send(new HttpResponse(Code.OK, Status.OK, 'Order Placed successfully', orderSummary ));

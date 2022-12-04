@@ -2,7 +2,7 @@ import { Method } from 'axios';
 import { notificationProducerURL } from '../config/config';
 import { performHTTPRequest } from '../helpers/network.helper';
 
-export const sendOUEmailNotification = (userId: string, toAddress: string, offerCode: string, userName: string) => {
+export const sendOUEmailNotification = (jobName: string, userId: string, toAddress: string, offerCode: string, userName: string) => {
   const url = `${notificationProducerURL}/api/v1/cmd/all`;
 
   const reqData = {
@@ -11,7 +11,7 @@ export const sendOUEmailNotification = (userId: string, toAddress: string, offer
     config: { withCredentials: true },
     headers: { 'Content-Type': 'application/json' },
     data: {
-      flowName: 'orderUpdatesWithOffer',
+      flowName: jobName,
       notificationTypes: ['emailNotification'],
       userSubset: 'default',
       payload: {
