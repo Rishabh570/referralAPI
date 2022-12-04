@@ -1,6 +1,5 @@
+import { nanoid } from 'nanoid';
 import { offerCodeLength } from "../config/config";
-
-const nanoid = require('nanoid');
 
 export const generateOfferCode = () => {
   return nanoid(offerCodeLength);
