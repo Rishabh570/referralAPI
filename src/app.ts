@@ -1,11 +1,11 @@
-import express, { Request, Response, Application, Router } from 'express';
-import orderRoutes from './routes/orders.routes';
+import { engine } from 'express-handlebars';
+import express, { Request, Response, Application } from 'express';
 import { HttpResponse } from './domain/response';
 import { Code } from './enum/code.enum';
 import { Status } from './enum/status.enum';
 import { PORT } from './config/config';
 import { verifyToken } from './middlewares';
-import { userRoute } from './routes';
+import { userRoute, orderRoute, referralRoute } from './routes';
 import * as database from './database';
 export class App {
   private readonly app: Application;
@@ -14,9 +14,16 @@ export class App {
 
   constructor(private readonly port: (string | number) = PORT || 3000) {
     this.app = express();
+
     this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
     this.app.use(express.json({ limit: '50mb' }));
-    // this.middleware();
+    
+    this.app.engine('handlebars', engine());
+    this.app.set('view engine', 'handlebars');
+    this.app.set('views', __dirname + '/views');
+
+    this.app.use(express.static('public'));
+
     this.routes();
   }
 
@@ -32,9 +39,10 @@ export class App {
   }
 
   private routes(): void {
-    this.app.use('/orders', this.middleware, orderRoutes);
+    this.app.use('/orders', this.middleware, orderRoute);
     this.app.use('/user', userRoute);
     this.app.get('/signup', (req, res) => res.send({success: true}))
+    this.app.use('/refer', referralRoute);
     this.app.get('/', (_: Request, res: Response)=> res.status(Code.OK).send(new HttpResponse(Code.OK, Status.OK, 'Welcome to the Order Service!')));
     this.app.all('*', (_: Request, res: Response)=> res.status(Code.NOT_FOUND).send(new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)));
   }
