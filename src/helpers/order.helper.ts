@@ -14,7 +14,7 @@ export const getTransactionFees = (orderType: orderInterface.IOrderType, investA
 }
 
 // This calculates cost breakdown for the new user
-export const getOrderSummary = (userObj: userInterface.IUser, investAmount: number, useCoins: boolean, orderType: orderInterface.IOrderType, scid: string): orderInterface.IOrderSummary => {
+export const getOrderSummary = (userObj: userInterface.IUser, investAmount: number, useCoins: number, orderType: orderInterface.IOrderType, scid: string): orderInterface.IOrderSummary => {
   const { smallbucks, flags } = userObj;
   const { hasInvested } = flags;
   let discount = 0;
