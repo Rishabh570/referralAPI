@@ -5,7 +5,7 @@ import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
 import { orderHelper } from '../helpers';
 import { IAuthenticatedUser } from '../interfaces/IUser';
-import { referralService, orderService, offerService } from '../services';
+import { referralService, orderService, offerService, userService, notificationService } from '../services';
 
 // @ts-ignore
 export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, res) => {
@@ -19,7 +19,7 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
     // Fetch user info from JWT
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await orderService.getUserById({ _id: id });
+    const userObj = await userService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -48,7 +48,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
     // @ts-ignore
     const { id } = req.user;
-    const userObj = await orderService.getUserById({ _id: id });
+    const userObj = await userService.getUserById({ _id: id });
     console.log('userObj: ', userObj);
     if(!userObj) {
       return res.status(Code.BAD_REQUEST)
@@ -58,22 +58,31 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     // calculate everything again
     const orderSummary = orderHelper.getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
-    
     // invoke orders API; gives response message based on orderType
     await orderService.placeOrderOnExchange();
 
-    const { flags, referredBy } = userObj;
+    const { flags, referredBy, email } = userObj;
     const { hasInvested: newUserHasInvested } = flags;
 
     /**
      *  Referrer
     */
+    let referrerUserObj = null;
     if(referredBy && !newUserHasInvested) {
       // add 100 INR worth of coins to referrer's account
       const smallbucksToAdd = referrerRewardINR * smallbucksMultiplier;
-      await orderService.updateUser({ _id: referredBy }, { $inc: { smallbucks: smallbucksToAdd } });
+      await userService.updateUser({ _id: referredBy }, { $inc: { smallbucks: smallbucksToAdd } });
 
-      // TODO: 2. send an email to referrer notifying successful onboarding of the referred user
+      // 2. send an email to referrer notifying successful onboarding of the referred user
+      referrerUserObj = await userService.getUserById({ _id: referredBy });
+      notificationService.sendOUEmailNotification({
+        jobName: 'orderUpdatesWithOfferForReferrer',
+        subset: 'default',
+        userId: referredBy,
+        toAddress: referrerUserObj!.email,
+        referrerName: referrerUserObj!.name,
+        newUserName: userObj.name,
+      });
     }
 
     /**
@@ -91,15 +100,33 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
       const { smallbucksEarned } = orderSummary;
 
       // update referralCode and hasInvested for new user
-      await orderService.updateUser({ _id: id }, { $set: { 'flags.hasInvested': true, referralCode: freshOfferCode }, $inc: { smallbucks: smallbucksEarned} });
+      await userService.updateUser({ _id: id }, { $set: { 'flags.hasInvested': true, referralCode: freshOfferCode }, $inc: { smallbucks: smallbucksEarned} });
       await referralService.updateReferralDoc({ referredTo: id }, { hasInvested: true, investDate: new Date() });
 
 
-      // TODO: Send a celebratory OU success email (with their newly create referral code)
-
+      // Send a celebratory OU success email (with their newly create referral code)
+      // flow = orderUpdatesWithOfferForNewUser, subset = default
+      notificationService.sendOUEmailNotification({
+        jobName: 'orderUpdatesWithOfferForNewUser',
+        subset: 'default',
+        userId: id,
+        referralCode: freshOfferCode,
+        smallbucksEarned,
+        toAddress: email,
+        referrerName: referrerUserObj!.name,
+        newUserName: userObj.name,
+      });
     }
     else {
-      // TODO: Send a normal OU success email (with their referral code) 
+      // Send a normal OU success email (with their referral code) > flow = orderUpdatesWithOffer, subset = default
+      notificationService.sendOUEmailNotification({
+        jobName: 'orderUpdatesWithOffer',
+        subset: 'default',
+        userId: id,
+        referralCode: userObj.referralCode,
+        toAddress: email,
+        newUserName: userObj.name,
+      });
     }
 
     return res.status(Code.OK)
