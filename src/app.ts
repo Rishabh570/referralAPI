@@ -35,6 +35,7 @@ export class App {
   private routes(): void {
     this.app.use('/orders', this.middleware, orderRoutes);
     this.app.use('/user', userRoute);
+    this.app.get('/signup', (req, res) => res.send({success: true}))
     this.app.get('/', (_: Request, res: Response)=> res.status(Code.OK).send(new HttpResponse(Code.OK, Status.OK, 'Welcome to the Order Service!')));
     this.app.all('*', (_: Request, res: Response)=> res.status(Code.NOT_FOUND).send(new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)));
   }

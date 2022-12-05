@@ -3,8 +3,14 @@ import { referralInterface } from '../interfaces';
 
 
 export const userSchema = new Schema<referralInterface.IReferral>({
-  referredBy: String,
-  referredTo: String,
+  referredBy: {
+    type: String,
+    index: true,
+  },
+  referredTo: {
+    type: String,
+    index: true,
+  },
   name: {
     type: String
   },

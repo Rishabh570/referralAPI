@@ -1,4 +1,5 @@
 import { Request, RequestHandler, Response } from "express";
+import { IReferral } from "./IReferral";
 
 export interface IUser {
   _id?: string;
@@ -26,4 +27,9 @@ export interface IAuthenticatedRequestHandler extends RequestHandler {
 
 export interface IAuthenticatedResponse extends Response {
   user: IJwtUser;
+}
+
+export interface IUserDetailsResponse {
+  userDetails: IUser,
+  referralDetails: IReferral
 }
