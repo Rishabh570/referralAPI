@@ -3,7 +3,7 @@ import { offerCodeLength, referrerRewardINR, smallbucksMultiplier } from '../con
 import { HttpResponse } from '../domain/response';
 import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
-import { getOrderSummary } from '../helpers/order.helper';
+import { orderHelper } from '../helpers';
 import { IAuthenticatedUser } from '../interfaces/IUser';
 import { referralService, orderService, offerService } from '../services';
 
@@ -26,7 +26,7 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
       .send(new HttpResponse(Code.BAD_REQUEST, Status.BAD_REQUEST, 'Invalid user'));
     }
 
-    const orderSummary = getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
+    const orderSummary = orderHelper.getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
     return res.status(Code.OK)
       .send(new HttpResponse(Code.OK, Status.OK, 'Order Placed successfully', orderSummary ));
@@ -56,7 +56,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     }
 
     // calculate everything again
-    const orderSummary = getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
+    const orderSummary = orderHelper.getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
     
     // invoke orders API; gives response message based on orderType
