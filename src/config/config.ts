@@ -16,14 +16,6 @@ export const mongoConfig = {
         user: process.env.MONGODB_USER || '',
         pass: process.env.MONGODB_PASS || '',
     },
-    transactionOptions: {
-        readPreference: 'primary',
-        writeConcern: {
-            j: false,
-            wtimeout: 5000,
-            w: 'majority',
-        },
-    },
 };
 
 export const showDebugLogs = true;
