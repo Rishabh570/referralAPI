@@ -13,7 +13,7 @@ export const getShortedURL = (originalLink: string) => {
   })
     .then((res) => {
       const resp = res.data;
-      const { shortUrl } = JSON.parse(resp);
+      const { shortUrl } = resp;
       console.log('shortUrl: ', shortUrl);
       return shortUrl;
     })
