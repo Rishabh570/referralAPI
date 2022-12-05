@@ -5,7 +5,7 @@ export interface IOrderSummary {
   smallbucksUsed: number;
   smallbucksRemaining: number;
   scid: string;
-  useCoins: boolean;
+  useCoins: number;
   totalTransactionFees: number;
   investAmount: number;
   smallbucksEarned: number;
