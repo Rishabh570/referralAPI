@@ -23,7 +23,6 @@ const buildPayloadForNewUser = async (
 
   return {
     subject: `Your first smallcase order is successful.`,
-    referrerName,
     newUserName,
     userDetailsLink: `${REFERRAL_API_URL}/orders/users/details`,
     utmCampaign: 'user-referral-engine',

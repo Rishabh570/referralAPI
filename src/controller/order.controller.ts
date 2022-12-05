@@ -113,7 +113,6 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
         referralCode: freshOfferCode,
         smallbucksEarned,
         toAddress: email,
-        referrerName: referrerUserObj!.name,
         newUserName: userObj.name,
       });
     }
