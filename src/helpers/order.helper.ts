@@ -20,11 +20,11 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
   let discount = 0;
   let smallbucksRemaining;
   let smallbucksUsed = useCoins ? useCoins : 0;
-  let smallbucksWorth = smallbucksUsed * smallbucksMultiplier;
+  let smallbucksWorth = smallbucksUsed / smallbucksMultiplier;
 
   // useCoins value must be lower than what user holds
   if(smallbucksUsed > smallbucks) {
-    throw new Error(`You can only use ${smallbucksUsed} coins.`);
+    throw new Error(`You can only use ${smallbucks} coins.`);
   }
 
   // Tx fees
@@ -44,16 +44,17 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
   let totalCost = investAmount + totalTransactionFees;
   let effectiveCost = totalCost;
 
-  if (smallbucksWorth >= totalCost) {
-    effectiveCost = 0;
-    discount = discount + totalCost;
-    smallbucksUsed = totalCost * smallbucksMultiplier;
-    smallbucksRemaining = smallbucks - smallbucksUsed;
+  if (smallbucksWorth >= totalTransactionFees) {
+    effectiveCost = investAmount;
+    discount = discount + totalTransactionFees;
+    smallbucksUsed = totalTransactionFees * smallbucksMultiplier;
+    smallbucksRemaining = smallbucksWorth - smallbucksUsed;
   }
   else {
-    effectiveCost = totalCost - smallbucksWorth;
+    effectiveCost = totalTransactionFees - smallbucksWorth;
     discount = discount + smallbucksWorth;
-    smallbucksRemaining = smallbucks - smallbucksUsed;
+    smallbucksUsed = smallbucksWorth;
+    smallbucksRemaining = 0;
   }
 
   const orderSummary = {

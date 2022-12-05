@@ -14,7 +14,6 @@ export const verifyToken: RequestHandler = (req, res, next) => {
       .send(new HttpResponse(Code.NOT_AUTHORIZED, Status.NOT_AUTHORIZED, 'Please login'));
   }
 
-  // TODO: use correct interface for data
   jwt.verify(jwtToken, authToken, function (error, data) {
     if (error) {
       return next(new Error('Could not verify token'));

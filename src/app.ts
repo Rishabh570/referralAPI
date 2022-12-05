@@ -16,7 +16,6 @@ export class App {
     this.app = express();
     this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
     this.app.use(express.json({ limit: '50mb' }));
-    // TODO: Enable middlewares
     // this.middleware();
     this.routes();
   }
