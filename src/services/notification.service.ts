@@ -1,8 +1,7 @@
 import { Method } from 'axios';
 import { NEW_USER_REFERRAL_OFFER_BANNER, notificationProducerURL, referralShortLinkTwitter, REFERRAL_API_URL, REFERRAL_OFFER_BANNER } from '../config/config';
-import { getShortSCDateString } from '../helpers/common.helper';
-import { performHTTPRequest } from '../helpers/network.helper';
-import { getShortedURL } from './shortener.service';
+import { shortenerService } from '../services';
+import { commonHelper, networkHelper  } from '../helpers';
 
 const buildReferrerPayload = (referrerName: string | undefined, newUserName: string) => {
   return {
@@ -20,7 +19,7 @@ const buildPayloadForNewUser = async (
   newUserName: string,
   referralCode: string | undefined
 ) => {
-  const shortURL = await getShortedURL(`${referralShortLinkTwitter}${referralCode}`);
+  const shortURL = await shortenerService.getShortedURL(`${referralShortLinkTwitter}${referralCode}`);
 
   return {
     subject: `Your first smallcase order is successful.`,
@@ -33,7 +32,7 @@ const buildPayloadForNewUser = async (
     referralOfferLearnMoreCTA: `${REFERRAL_API_URL}/refer`, // TODO: add documentation on this page using hbs
     referralCode,
     referralLinkTwitter: shortURL,
-    date: getShortSCDateString(
+    date: commonHelper.getShortSCDateString(
       new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Kolkata',
       })
@@ -319,7 +318,7 @@ const buildNormalOUPayload = async (
   newUserName: string,
   referralCode: string | undefined
 ) => {
-  const shortURL = await getShortedURL(`${referralShortLinkTwitter}${referralCode}`);
+  const shortURL = await shortenerService.getShortedURL(`${referralShortLinkTwitter}${referralCode}`);
   return {
     subject: `Your smallcase order is successful.`,
     referrerName,
@@ -331,7 +330,7 @@ const buildNormalOUPayload = async (
     referralOfferLearnMoreCTA: `${REFERRAL_API_URL}/refer`,
     referralCode,
     referralLinkTwitter: shortURL,
-    date: getShortSCDateString(
+    date: commonHelper.getShortSCDateString(
       new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Kolkata',
       })
@@ -676,7 +675,7 @@ export const sendOUEmailNotification = (
     }
   }
 
-  return performHTTPRequest(reqData)
+  return networkHelper.performHTTPRequest(reqData)
     .then((res) => {
       const resp = res.data;
       console.log('resp: ', resp);

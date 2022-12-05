@@ -5,8 +5,7 @@ import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
 import { orderHelper } from '../helpers';
 import { IAuthenticatedUser } from '../interfaces/IUser';
-import { referralService, orderService, offerService, userService } from '../services';
-import { sendOUEmailNotification } from '../services/notification.service';
+import { referralService, orderService, offerService, userService, notificationService } from '../services';
 
 // @ts-ignore
 export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, res) => {
@@ -76,7 +75,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
       // 2. send an email to referrer notifying successful onboarding of the referred user
       referrerUserObj = await userService.getUserById({ _id: referredBy });
-      sendOUEmailNotification({
+      notificationService.sendOUEmailNotification({
         jobName: 'orderUpdatesWithOfferForReferrer',
         subset: 'default',
         userId: referredBy,
@@ -107,7 +106,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
 
       // Send a celebratory OU success email (with their newly create referral code)
       // flow = orderUpdatesWithOfferForNewUser, subset = default
-      sendOUEmailNotification({
+      notificationService.sendOUEmailNotification({
         jobName: 'orderUpdatesWithOfferForNewUser',
         subset: 'default',
         userId: id,
@@ -120,7 +119,7 @@ export const placeOrderConfirm = async (req: Request, res: Response) => {
     }
     else {
       // Send a normal OU success email (with their referral code) > flow = orderUpdatesWithOffer, subset = default
-      sendOUEmailNotification({
+      notificationService.sendOUEmailNotification({
         jobName: 'orderUpdatesWithOffer',
         subset: 'default',
         userId: id,
