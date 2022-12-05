@@ -610,7 +610,7 @@ const buildNormalOUPayload = async (
   }
 }
 
-export const buildNotificationPayload = (
+export const buildNotificationPayload = async (
   jobName: string,
   referrerName: string | undefined,
   newUserName: string,
@@ -622,10 +622,10 @@ export const buildNotificationPayload = (
       payload = buildReferrerPayload(referrerName, newUserName);
       break;
     case 'orderUpdatesWithOfferForNewUser':
-      payload = buildPayloadForNewUser(referrerName, newUserName, referralCode);
+      payload = await buildPayloadForNewUser(referrerName, newUserName, referralCode);
       break;
     case 'orderUpdatesWithOffer':
-      payload = buildNormalOUPayload(referrerName, newUserName, referralCode);
+      payload = await buildNormalOUPayload(referrerName, newUserName, referralCode);
       break;  
     default:
       break;
@@ -634,7 +634,7 @@ export const buildNotificationPayload = (
   return payload;
 }
 
-export const sendOUEmailNotification = (
+export const sendOUEmailNotification = async (
   data: {
     jobName: string,
     subset: string,
@@ -648,6 +648,7 @@ export const sendOUEmailNotification = (
 ) => {
   const url = `${notificationProducerURL}/api/v1/cmd/all`;
   const { jobName, userId, toAddress, subset, referrerName, newUserName, referralCode } = data;
+  const templateData = await buildNotificationPayload(jobName, referrerName, newUserName, referralCode);
 
   const reqData = {
     method: 'POST' as Method,
@@ -668,7 +669,7 @@ export const sendOUEmailNotification = (
           user: {
             toAddress,
           },
-          templateData: buildNotificationPayload(jobName, referrerName, newUserName, referralCode),
+          templateData,
         }
       }
     }
