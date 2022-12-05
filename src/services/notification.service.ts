@@ -25,11 +25,11 @@ const buildPayloadForNewUser = async (
     subject: `Your first smallcase order is successful.`,
     referrerName,
     newUserName,
-    userDetailsLink: `${REFERRAL_API_URL}/user`,
+    userDetailsLink: `${REFERRAL_API_URL}/orders/users/details`,
     utmCampaign: 'user-referral-engine',
     utmContent: 'referrer',
     referralOfferBanner: NEW_USER_REFERRAL_OFFER_BANNER,
-    referralOfferLearnMoreCTA: `${REFERRAL_API_URL}/refer`, // TODO: add documentation on this page using hbs
+    referralOfferLearnMoreCTA: `${REFERRAL_API_URL}/refer`,
     referralCode,
     referralLinkTwitter: shortURL,
     date: commonHelper.getShortSCDateString(
@@ -323,7 +323,7 @@ const buildNormalOUPayload = async (
     subject: `Your smallcase order is successful.`,
     referrerName,
     newUserName,
-    userDetailsLink: `${REFERRAL_API_URL}/user`,
+    userDetailsLink: `${REFERRAL_API_URL}/orders/users/details`,
     utmCampaign: 'user-referral-engine',
     utmContent: 'referrer',
     referralOfferBanner: REFERRAL_OFFER_BANNER,
