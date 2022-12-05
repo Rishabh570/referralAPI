@@ -19,17 +19,19 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
   const { hasInvested } = flags;
   let discount = 0;
   let smallbucksRemaining;
-  let smallbucksUsed = useCoins ? useCoins : 0;
+  let smallbucksUsed = useCoins || 0;
   let smallbucksWorth = smallbucksUsed / smallbucksMultiplier;
 
   // useCoins value must be lower than what user holds
-  if(smallbucksUsed > smallbucks) {
+  if (smallbucksUsed > smallbucks) {
     throw new Error(`You can only use ${smallbucks} coins.`);
   }
 
   // Tx fees
   let txFees = getTransactionFees(orderType, investAmount);
   let gstFees = txFees * 0.18;
+
+  let totalTransactionFees = txFees + gstFees;
 
   // If first order, give smallbucks worth gstFee and waiver off txFees
   let smallbucksUnitsAsGift = 0;
@@ -38,24 +40,25 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
     discount = txFees;
     txFees = 0;
   }
-  const totalTransactionFees = txFees + gstFees;
 
   // Total money to be deducted (including investAmount)
   let totalCost = investAmount + totalTransactionFees;
   let effectiveCost = totalCost;
 
-  if (smallbucksWorth >= totalTransactionFees) {
-    effectiveCost = investAmount;
-    discount = discount + totalTransactionFees;
-    smallbucksUsed = totalTransactionFees * smallbucksMultiplier;
-    smallbucksRemaining = smallbucksWorth - smallbucksUsed;
+  if (smallbucksWorth >= txFees) {
+    discount = txFees;
+    smallbucksUsed = discount * smallbucksMultiplier;
   }
   else {
-    effectiveCost = totalTransactionFees - smallbucksWorth;
-    discount = discount + smallbucksWorth;
-    smallbucksUsed = smallbucksWorth;
-    smallbucksRemaining = 0;
+    discount = hasInvested ? smallbucksWorth : txFees;
+    smallbucksUsed = discount * smallbucksMultiplier
+    if(!hasInvested){
+      smallbucksUsed = 0;
+    }
   }
+  
+  smallbucksRemaining = Math.max(0, smallbucks - smallbucksUsed);
+  effectiveCost -= discount;
 
   const orderSummary = {
     investAmount,
