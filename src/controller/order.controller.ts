@@ -29,7 +29,7 @@ export const placeOrderIntent: RequestHandler = async (req: IAuthenticatedUser, 
     const orderSummary = orderHelper.getOrderSummary(userObj, investAmount, useCoins, orderType, scid);
 
     return res.status(Code.OK)
-      .send(new HttpResponse(Code.OK, Status.OK, 'Order Placed successfully', orderSummary ));
+      .send(new HttpResponse(Code.OK, Status.OK, 'Success', orderSummary ));
   } catch (error: any) {
     console.error(error);
     const errMessage = error.message as string;

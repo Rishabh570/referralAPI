@@ -15,7 +15,7 @@ export const getTransactionFees = (orderType: orderInterface.IOrderType, investA
 
 // This calculates cost breakdown for the new user
 export const getOrderSummary = (userObj: userInterface.IUser, investAmount: number, useCoins: number, orderType: orderInterface.IOrderType, scid: string): orderInterface.IOrderSummary => {
-  const { smallbucks, flags } = userObj;
+  const { smallbucks, flags, referralCode } = userObj;
   const { hasInvested } = flags;
   let discount = 0;
   let smallbucksRemaining;
@@ -41,6 +41,8 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
     txFees = 0;
   }
 
+  if(!referralCode) smallbucksUnitsAsGift = 0;
+
   // Total money to be deducted (including investAmount)
   let totalCost = investAmount + totalTransactionFees;
   let effectiveCost = totalCost;
@@ -50,7 +52,7 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
     smallbucksUsed = discount * smallbucksMultiplier;
   }
   else {
-    discount = hasInvested ? smallbucksWorth : txFees;
+    discount = discount || hasInvested ? smallbucksWorth : txFees;
     smallbucksUsed = discount * smallbucksMultiplier
     if(!hasInvested){
       smallbucksUsed = 0;
