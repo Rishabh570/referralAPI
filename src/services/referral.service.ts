@@ -7,7 +7,7 @@ export const addReferral = (referralData: referralInterface.IAddReferralInterfac
 }
 
 export const getReferrer = (query: FilterQuery<Document>, projection: any | null = {}) => {
-    return referralModel.Referral.findOne(query, projection).lean().exec();
+    return referralModel.Referral.find(query, projection);
 };
 
 export const updateReferralDoc = (findObj: FilterQuery<Document>, updateObj: UpdateQuery<Document>, optional?: QueryOptions) => {

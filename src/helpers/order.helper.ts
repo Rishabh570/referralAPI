@@ -1,21 +1,20 @@
 import { smallbucksMultiplier } from "../config/config";
-import { IOrderSummary, IOrderType } from "../interfaces/IOrder";
-import { IUser } from "../interfaces/IUser";
+import { orderInterface, userInterface } from "../interfaces";
 
-export const getMaxTransactionFees = (orderType: IOrderType) => {
+export const getMaxTransactionFees = (orderType: orderInterface.IOrderType) => {
   const { type } = orderType;
   if (type === 'SIP') return 10;
   return 100;
 }
 
-export const getTransactionFees = (orderType: IOrderType, investAmount: number) => {
+export const getTransactionFees = (orderType: orderInterface.IOrderType, investAmount: number) => {
   const txFeesMaxLimit = getMaxTransactionFees(orderType);
   const txFees = investAmount * 0.015 < txFeesMaxLimit ? investAmount * 0.015 : txFeesMaxLimit;
   return txFees;
 }
 
 // This calculates cost breakdown for the new user
-export const getOrderSummary = (userObj: IUser, investAmount: number, useCoins: number, orderType: IOrderType, scid: string): IOrderSummary => {
+export const getOrderSummary = (userObj: userInterface.IUser, investAmount: number, useCoins: boolean, orderType: orderInterface.IOrderType, scid: string): orderInterface.IOrderSummary => {
   const { smallbucks, flags } = userObj;
   const { hasInvested } = flags;
   let discount = 0;

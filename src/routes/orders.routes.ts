@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { placeOrderIntent, placeOrderConfirm } from '../controller/order.controller';
+import { orderController, userController } from '../controller';
 const orderRoutes = Router();
 
-orderRoutes.post('/intent', placeOrderIntent);
-orderRoutes.post('/confirm', placeOrderConfirm);
-
+orderRoutes.post('/intent', orderController.placeOrderIntent);
+orderRoutes.post('/confirm', orderController.placeOrderConfirm);
+orderRoutes.get('/users/details', userController.getUserDetails);
 export default orderRoutes;

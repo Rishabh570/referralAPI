@@ -2,10 +2,9 @@ import { Request, RequestHandler, Response } from 'express';
 import { HttpResponse } from '../domain/response';
 import { Code } from '../enum/code.enum';
 import { Status } from '../enum/status.enum';
-import { IJwtUser, IUser } from '../interfaces/IUser';
-import { userService } from '../services';
-import { referralService } from '../services';
-
+import { IAuthenticatedUser, IJwtUser, IUser } from '../interfaces/IUser';
+import { userService, referralService } from '../services';
+import { utilHelper } from '../helpers';
 
 export const signup: RequestHandler = async (req: Request, res: Response) => {
     try {
@@ -71,6 +70,30 @@ export const login: RequestHandler = async (req, res) => {
         const jwtToken = userService.generateJwt(jwtPayload)
         res.cookie('token', jwtToken);
 
+    } catch (error) {
+        console.error(error);
+        return res.status(Code.INTERNAL_SERVER_ERROR)
+            .send(new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, 'An error occurred'));
+    }
+}
+//@ts-ignore
+export const getUserDetails: RequestHandler = async (req: IAuthenticatedUser, res) => {
+
+    try {
+        const { id } = req.user;
+        const responseObj = { userDetails: {}, referralDetails: [] };
+        const userDetails = await userService.findUser({ _id: utilHelper.getMongooseId(id) }, { password: 0 });
+        if (!userDetails.length) return res.status(Code.NOT_FOUND)
+            .send(new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, 'User Not Found', responseObj));
+
+        responseObj.userDetails = userDetails[0];
+
+        const referralDetails = await referralService.getReferrer({ referredBy: id });
+        //@ts-ignore
+        responseObj.referralDetails = referralDetails;
+
+        return res.status(Code.OK)
+            .send(new HttpResponse(Code.OK, Status.OK, 'User Details', responseObj));
     } catch (error) {
         console.error(error);
         return res.status(Code.INTERNAL_SERVER_ERROR)
