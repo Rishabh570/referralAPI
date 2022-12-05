@@ -68,7 +68,7 @@ export const login: RequestHandler = async (req, res) => {
             id: loginUserDetails[0]._id
         };
         const jwtToken = userService.generateJwt(jwtPayload)
-        res.cookie('token', jwtToken);
+        return res.cookie('token', jwtToken).send(new HttpResponse(Code.OK, Status.OK, "Login successful"));
 
     } catch (error) {
         console.error(error);
