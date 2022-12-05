@@ -8,7 +8,7 @@ const buildReferrerPayload = (referrerName: string | undefined, newUserName: str
     subject: `Thanks for helping us spread the word!`,
     referrerName,
     newUserName,
-    userDetailsLink: `${REFERRAL_API_URL}/users/details`,
+    userDetailsLink: `${REFERRAL_API_URL}/orders/users/details`,
     utmCampaign: 'user-referral-engine',
     utmContent: 'referrer',
   }
