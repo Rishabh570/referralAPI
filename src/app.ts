@@ -22,7 +22,7 @@ export class App {
     
     this.app.engine('handlebars', engine());
     this.app.set('view engine', 'handlebars');
-    this.app.set('views', __dirname + '/views');
+    this.app.set('views', __dirname + '/../src/views');
 
     this.app.use(express.static('public'));
 
