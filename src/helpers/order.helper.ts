@@ -31,8 +31,6 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
   let txFees = getTransactionFees(orderType, investAmount);
   let gstFees = txFees * 0.18;
 
-  let totalTransactionFees = txFees + gstFees;
-
   // If first order, give smallbucks worth gstFee and waiver off txFees
   let smallbucksUnitsAsGift = 0;
   if (!hasInvested) {
@@ -41,26 +39,36 @@ export const getOrderSummary = (userObj: userInterface.IUser, investAmount: numb
     txFees = 0;
   }
 
-  if(!referralCode) smallbucksUnitsAsGift = 0;
+  let totalTransactionFees = txFees + gstFees;
 
   // Total money to be deducted (including investAmount)
   let totalCost = investAmount + totalTransactionFees;
   let effectiveCost = totalCost;
 
-  if (smallbucksWorth >= txFees) {
-    discount = txFees;
-    smallbucksUsed = discount * smallbucksMultiplier;
-  }
-  else {
-    discount = discount || hasInvested ? smallbucksWorth : txFees;
-    smallbucksUsed = discount * smallbucksMultiplier
-    if(!hasInvested){
-      smallbucksUsed = 0;
+  // 1. old user > +ve smallbucksWorth & +ve txFees
+  // 2. old user > smallbucksWorth = 0 & +ve txFees
+  // 3. new user > smallbucksWorth = 0 & txFees = 0
+
+  if (hasInvested) {
+    if (smallbucksWorth >= txFees) {
+      // old user has +ve smallbucksWorth
+      discount = txFees;
+      smallbucksUsed = txFees * smallbucksMultiplier;
+      smallbucksRemaining = smallbucks - smallbucksUsed;
+    }
+    else {
+      // old use doesn't have enough smallbucksWorth
+      discount = smallbucksWorth;
+      smallbucksRemaining = smallbucks - smallbucksUsed; 
     }
   }
-  
-  smallbucksRemaining = Math.max(0, smallbucks - smallbucksUsed);
-  effectiveCost -= discount;
+  else {
+    // new user, both smallbucksWorth and txFees are zero
+    smallbucksUsed = 0;
+    smallbucksRemaining = 0;
+  }
+
+  effectiveCost = effectiveCost - discount;
 
   const orderSummary = {
     investAmount,
